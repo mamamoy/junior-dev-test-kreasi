@@ -19,4 +19,5 @@ Route::get('/', function () {
     return Inertia::render('Home');
 })->name('home.index');
 
+Route::get('/feedback', [FeedbackController::class, 'index'])->name('feedback.index');
 Route::post('/feedback/store', [FeedbackController::class, 'store'])->name('feedback.store');

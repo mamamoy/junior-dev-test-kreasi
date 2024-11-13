@@ -1,4 +1,5 @@
 <script setup>
+import { Inertia } from '@inertiajs/inertia';
 import axios from 'axios';
 import { computed, ref } from 'vue';
 
@@ -11,9 +12,28 @@ const closeModal = () => {
 const name = ref('')
 const email = ref('')
 const description = ref('')
+const selectedEmoji = ref(null)
+
+const emoji = [
+    { num: 1, emojiImg: '/images/emoji/1.svg', alt: 'very bad' },
+    { num: 2, emojiImg: '/images/emoji/2.svg', alt: 'bad' },
+    { num: 3, emojiImg: '/images/emoji/3.svg', alt: 'nope' },
+    { num: 4, emojiImg: '/images/emoji/4.svg', alt: 'good' },
+    { num: 5, emojiImg: '/images/emoji/5.svg', alt: 'very good' },
+]
+
+const setEmoji = (num) => {
+    selectedEmoji.value = num
+}
+console.log(selectedEmoji.value)
+
+const isSelected = (num) => {
+    return selectedEmoji.value === num
+}
 
 const nameError = ref('')
 const emailError = ref('')
+const ratingError = ref('')
 const descriptionError = ref('')
 
 const validateName = () => {
@@ -30,6 +50,12 @@ const validateEmail = () => {
         emailError.value = "Your email cannot be empty"
     }
 }
+const validateRating= () => {
+    ratingError.value = ''
+    if (!selectedEmoji.value) {
+        ratingError.value = "Your rating cannot be empty"
+    }
+}
 const validateDescription = () => {
     descriptionError.value = ''
     if (!description.value) {
@@ -42,6 +68,7 @@ const validateDescription = () => {
 const isFormValid = computed(() => {
     validateName()
     validateEmail()
+    validateRating()
     validateDescription()
     return !nameError.value && !emailError.value && !descriptionError.value
 })
@@ -51,6 +78,7 @@ const storeFeedback = async () => {
     const formData = new FormData()
     formData.append('name', name.value)
     formData.append('email', email.value)
+    formData.append('rating', selectedEmoji.value)
     formData.append('description', description.value)
     try {
         const response = await axios.post('/feedback/store', formData)
@@ -88,6 +116,7 @@ const submitConfirmation = () => {
             storeFeedback()
             closeModal()
             resetForm()
+            Inertia.get(window.location.href);
         }
     })
 }
@@ -129,10 +158,25 @@ const resetForm = () => {
                 <span v-if="emailError" class="text-red-500 text-sm flex justify-end ">{{ emailError }}</span>
             </div>
             <div>
+                <div class="grid grid-cols-5 gap-2">
+                    <div class="flex items-center justify-center" v-for="list in emoji" :key="list.num">
+                        <button @click.prevent="setEmoji(list.num)">
+                            <img :class="[
+                                'transition-all duration-200',
+                                isSelected(list.num) ? 'w-[90px] h-[90px]' : 'w-[40px] h-[40px]',
+                                { 'hover:w-[90px] hover:h-[90px] active:w-[90px] active:h-[90px]': !isSelected(list.num) }
+                            ]" :src="list.emojiImg" :alt="list.alt" />
+                        </button>
+                    </div>
+                </div>
+                <span v-if="ratingError" class="text-red-500 text-sm flex justify-end">{{ ratingError
+                    }}</span>
+            </div>
+            <div>
                 <div class="w-full flex items-center gap-2">
                     <label for="description" class="text-md text-gray-500 text-extrabold w-1/5">Feedback</label>
                     <textarea :class="!descriptionError ? 'border-gray-400' : 'border-red-600'"
-                        class="w-full rounded-md focus:ring-blue-400 focus:border-blue-400" type="email"
+                        class="w-full h-[200px] rounded-md focus:ring-blue-400 focus:border-blue-400" type="email"
                         name="description" id="description" v-model="description"
                         placeholder="Describe your opinion about our service here"></textarea>
                 </div>

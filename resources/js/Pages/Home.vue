@@ -18,7 +18,7 @@ const openModal = () => {
 
         <div class="max-w-lg p-6 bg-white border border-gray-200 rounded-lg shadow">
             <div class="grid grid-cols-2 pb-3 border-b border-b-gray-200">
-                <div
+                <Link :href="route('feedback.index')"
                     class="flex flex-col items-center justify-center border-r border-r-gray-200 p-4 hover:bg-blue-500 hover:rounded-md group transition ease-in-out delay-100 cursor-pointer">
                     <div class="mb-2">
                         <svg class="w-12 h-12 text-blue-700 group-hover:text-blue-50 transition ease-in-out delay-100" aria-hidden="true"
@@ -32,7 +32,7 @@ const openModal = () => {
                     <div
                         class="text-md font-extrabold text-blue-700 group-hover:text-blue-50 transition ease-in-out delay-100">
                         Feedback List</div>
-                </div>
+                </Link>
                 <button @click="openModal"
                     class="flex flex-col items-center justify-center p-4  hover:bg-blue-500 hover:rounded-md group transition ease-in-out delay-100 cursor-pointer">
                     <div class="mb-2">
