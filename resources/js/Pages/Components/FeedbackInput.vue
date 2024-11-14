@@ -1,9 +1,8 @@
 <script setup>
-import { Inertia } from '@inertiajs/inertia';
 import axios from 'axios';
 import { computed, ref } from 'vue';
 
-const emit = defineEmits(['update:show'])
+const emit = defineEmits(['update:show', 'feedbackAdded'])
 
 const closeModal = () => {
     emit('update:show', false)
@@ -50,7 +49,7 @@ const validateEmail = () => {
         emailError.value = "Your email cannot be empty"
     }
 }
-const validateRating= () => {
+const validateRating = () => {
     ratingError.value = ''
     if (!selectedEmoji.value) {
         ratingError.value = "Your rating cannot be empty"
@@ -70,7 +69,7 @@ const isFormValid = computed(() => {
     validateEmail()
     validateRating()
     validateDescription()
-    return !nameError.value && !emailError.value && !descriptionError.value
+    return !nameError.value && !emailError.value && !ratingError.value && !descriptionError.value
 })
 
 
@@ -81,7 +80,7 @@ const storeFeedback = async () => {
     formData.append('rating', selectedEmoji.value)
     formData.append('description', description.value)
     try {
-        const response = await axios.post('/feedback/store', formData)
+        const response = await axios.post('/api/feedback/store', formData)
 
         if (response.data.status === 'success') {
             Swal.fire({
@@ -91,6 +90,10 @@ const storeFeedback = async () => {
                 showConfirmButton: false,
                 timer: 1500
             })
+            emit('feedbackAdded', response.data.feedback)
+
+        } else {
+            throw new Error("Feedback not saved")
         }
     } catch (error) {
         Swal.fire({
@@ -116,7 +119,7 @@ const submitConfirmation = () => {
             storeFeedback()
             closeModal()
             resetForm()
-            Inertia.get(window.location.href);
+            
         }
     })
 }
@@ -133,6 +136,7 @@ const submitForm = () => {
 const resetForm = () => {
     name.value = ''
     email.value = ''
+    selectedEmoji.value = ''
     description.value = ''
 }
 </script>
@@ -160,7 +164,11 @@ const resetForm = () => {
             <div>
                 <div class="grid grid-cols-5 gap-2">
                     <div class="flex items-center justify-center" v-for="list in emoji" :key="list.num">
-                        <button @click.prevent="setEmoji(list.num)">
+                        <button @click.prevent="setEmoji(list.num)" class="flex items-center mx-auto" :class="[
+                                'transition-all duration-200',
+                                isSelected(list.num) ? 'w-[90px] h-[90px] rounded-full bg-blue-700 p-2' : 'w-[40px] h-[40px]',
+                                { 'hover:w-[90px] hover:h-[90px] hover:rounded-full hover:bg-blue-700 hover:p-2 active:w-[90px] active:h-[90px]': !isSelected(list.num) }
+                            ]">
                             <img :class="[
                                 'transition-all duration-200',
                                 isSelected(list.num) ? 'w-[90px] h-[90px]' : 'w-[40px] h-[40px]',

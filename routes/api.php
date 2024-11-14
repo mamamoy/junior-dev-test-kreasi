@@ -19,4 +19,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
+Route::get('/feedbacks', [FeedbackController::class, 'apiFeedback']);
+Route::post('/feedback/store', [FeedbackController::class, 'store'])->name('feedback.store');

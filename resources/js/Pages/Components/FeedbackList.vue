@@ -1,10 +1,38 @@
 <script setup>
 import moment from 'moment';
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import Modal from './Modal.vue';
 import FeedbackInput from './FeedbackInput.vue';
+import axios from 'axios';
+import FeedbackDetail from './FeedbackDetail.vue';
+
+const feedbacks = ref([])
+
+onMounted(async () => {
+    try {
+        const response = await axios.get('/api/feedbacks')
+        feedbacks.value = response.data
+    } catch (error){
+        console.error('Error fetching feedbacks: ', error)
+    }
+})
+
 
 const showModal = ref(false)
+const showDetail = ref(false)
+const selectedFeedback = ref(null)
+
+const openDetail = (item) => {
+    selectedFeedback.value = item
+    showDetail.value = true
+}
+
+const handleCloseDetail = (newShowState) => {
+  if (!newShowState) {
+    selectedFeedback.value = null;
+    showDetail.value = false
+  }
+}
 
 const openModal = () => {
     showModal.value = true
@@ -33,10 +61,6 @@ const getRatingColor = (value) => {
     return ratingColors[value]
 }
 
-const props = defineProps({
-    feedbacks: Array
-})
-
 const fromNow = (date) => {
     return moment(date).fromNow()
 }
@@ -50,10 +74,10 @@ const searchTable = ref('')
 
 const filteredTable = computed(() => {
     if (!searchTable.value) {
-        return props.feedbacks
+        return feedbacks.value
     } else {
         const query = searchTable.value.toLowerCase();
-        return props.feedbacks.filter(data => {
+        return feedbacks.value.filter(data => {
             const ratingDesc = getRatingDesc(data.rating).toLowerCase();
             if (ratingDesc.includes(query)) {
                 return true
@@ -77,11 +101,15 @@ const paginatedTable = computed(() => {
     return filteredTable.value.slice(startIndex, endIndex)
 })
 
+const addFeedbackToList = (newFeedback) => {
+    feedbacks.value.unshift(newFeedback)
+}
+
 </script>
 <template>
     <div class="bg-white border border-gray-300 rounded-lg shadow-sm min-w-full">
         <div class="flex items-center justify-between py-7 border-b border-gray-300">
-            <h1 class="text-2xl px-4 font-bold text-blue-700 ml-4">
+            <h1 v-once class="text-2xl px-4 font-bold text-blue-700 ml-4">
                 Feedback List
             </h1>
 
@@ -104,7 +132,7 @@ const paginatedTable = computed(() => {
 
 
             <div class="px-6">
-                <button @click="openModal" type="button"
+                <button v-once @click="openModal" type="button"
                     class="flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 rounded-lg text-sm px-4 py-2 ">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-6 h-6">
@@ -113,16 +141,16 @@ const paginatedTable = computed(() => {
                     Add new feedback
                 </button>
                 <Modal :show="showModal" @update:show="showModal = $event" title="Give us your feedback">
-                    <FeedbackInput @update:show="showModal = false" />
+                    <FeedbackInput @update:show="showModal = false" @feedbackAdded="addFeedbackToList" />
                 </Modal>
             </div>
         </div>
         <div class="py-5 px-3">
             <div v-for="item in paginatedTable" :key="item.id"
-                class="mx-2 p-2 border-b border-gray-200 hover:bg-gray-100 hover:rounded-md cursor-pointer group ">
+                class="mx-2 p-2 border-b border-gray-200 hover:bg-gray-100 hover:rounded-md cursor-pointer group" @click="openDetail(item)">
                 <div class="flex items-start gap-4">
-                    <div class="">
-                        <img src="https://picsum.photos/100/140" class="rounded-lg hover:rounded-sm ">
+                    <div class="flex items-center">
+                        <img src="https://picsum.photos/100/140" class="rounded-lg group-hover:border-4 group-hover:border-blue-700">
                     </div>
                     <div class="space-y-3 w-full min-h-full">
                         <div class="h-1/5 py-2 border-b border-b-gray-300 flex items-center justify-between">
@@ -167,5 +195,8 @@ const paginatedTable = computed(() => {
                 </li>
             </ul>
         </div>
+        <Modal :show="showDetail" @update:show="handleCloseDetail($event)" >
+            <FeedbackDetail class="h-full" v-if="selectedFeedback" :detail="selectedFeedback"/>
+        </Modal>
     </div>
 </template>

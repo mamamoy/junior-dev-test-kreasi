@@ -3,8 +3,8 @@ import { Link } from '@inertiajs/inertia-vue3';
 import {route} from 'ziggy-js'
 
 const menuItems = [
-    {name: 'Home', routeName: 'home.index'},
     {name: 'Feedback List', routeName: 'feedback.index'},
+    {name: 'About Me', routeName: 'about-me.index'},
 ]
 </script>
 <template>
@@ -12,7 +12,7 @@ const menuItems = [
         <nav class="bg-white border-gray-200 px-4 lg:px-6 py-2.5 shadow-sm">
             <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen">
                 <a href="/" class="flex items-center">
-                    <span class="self-center text-xl font-semibold whitespace-nowrap ">KREASI AI</span>
+                    <span class="self-center text-xl font-semibold whitespace-nowrap ">AAN SETIAWAN</span>
                 </a>
                 
                 <div class="flex items-center lg:order-2">
